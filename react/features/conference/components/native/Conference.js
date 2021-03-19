@@ -1,13 +1,13 @@
 // @flow
 
 import React from 'react';
-import { NativeModules, SafeAreaView, StatusBar, View } from 'react-native';
+import { Dimensions, NativeModules, SafeAreaView, StatusBar, View } from 'react-native';
 
 import { appNavigate } from '../../../app/actions';
 import { PIP_ENABLED, FULLSCREEN_ENABLED, getFeatureFlag } from '../../../base/flags';
 import { Container, LoadingIndicator, TintedView } from '../../../base/react';
 import { connect } from '../../../base/redux';
-import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
+import { ASPECT_RATIO_NARROW, clientResized } from '../../../base/responsive-ui';
 import { TestConnectionInfo } from '../../../base/testing';
 import { ConferenceNotification, isCalendarEnabled } from '../../../calendar-sync';
 import { Chat } from '../../../chat';
@@ -114,6 +114,7 @@ class Conference extends AbstractConference<Props, *> {
         // Bind event handlers so they are only bound once per instance.
         this._onClick = this._onClick.bind(this);
         this._onHardwareBackPress = this._onHardwareBackPress.bind(this);
+        this._onDimensionChange = this._onDimensionChange.bind(this);
         this._setToolboxVisible = this._setToolboxVisible.bind(this);
     }
 
@@ -126,6 +127,7 @@ class Conference extends AbstractConference<Props, *> {
      */
     componentDidMount() {
         BackButtonRegistry.addListener(this._onHardwareBackPress);
+        Dimensions.addEventListener('change', this._onDimensionChange);
     }
 
     /**
@@ -139,6 +141,7 @@ class Conference extends AbstractConference<Props, *> {
     componentWillUnmount() {
         // Tear handling any hardware button presses for back navigation down.
         BackButtonRegistry.removeListener(this._onHardwareBackPress);
+        Dimensions.removeEventListener('change', this._onDimensionChange);
     }
 
     /**
@@ -175,6 +178,18 @@ class Conference extends AbstractConference<Props, *> {
     }
 
     _onHardwareBackPress: () => boolean;
+
+    _onDimensionChange: () => void;
+
+    /**
+     * Changes the value of the width and height.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onDimensionChange() {
+        this.props.dispatch(clientResized(Dimensions.get('window').width, Dimensions.get('window').height));
+    }
 
     /**
      * Handles a hardware button press for back navigation. Enters Picture-in-Picture mode
