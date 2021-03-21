@@ -1,9 +1,9 @@
 server {
     listen 80;
 
-    server_name jitsi.example.com;
+    server_name jitsi-meet.aroraas.people.aws.dev;
     # set the root
-    root /srv/jitsi.example.com;
+    root /usr/share/jitsi-meet;
     index index.html;
 
     location ~ ^/([a-zA-Z0-9=\?]+)$ {
